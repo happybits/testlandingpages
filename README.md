@@ -1,37 +1,58 @@
-# Marco Polo Pro Landing Page
+# Landing Page Templates
 
-A modern landing page for Marco Polo Pro, designed specifically for construction teams. This landing page showcases how Marco Polo Pro helps construction teams stay connected and efficient through asynchronous video messaging.
+This repository contains multiple landing page templates and variations for different projects.
 
-## Features
+## 📁 Folder Structure
 
-- Responsive design
-- Modern UI/UX
-- Interactive elements
-- Mobile-first approach
-- Optimized performance
+```
+├── template/          # Master template - edit here for new features
+│   ├── index.html
+│   ├── styles.css
+│   ├── script.js
+│   └── Images/
+├── construction/      # Construction-specific landing page
+│   ├── index.html
+│   ├── styles.css
+│   ├── script.js
+│   └── Images/
+└── Reference/         # Design references
+```
 
-## Technologies Used
+## 🚀 Publishing
 
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
-- Modern CSS Features (Flexbox, Grid, Animations)
+### For Template (Development):
+- Edit files in `template/` folder
+- Test changes locally
+- Push to `development` branch
 
-## Getting Started
+### For Construction (Live):
+- Copy changes from `template/` to `construction/`
+- Customize for construction industry
+- Push to `main` branch for live deployment
 
-1. Clone the repository
-2. Open `index.html` in your browser
-3. All assets are included in the `Images` directory
+## 📋 Workflow
 
-## Development
+1. **Make changes in `template/`** - This is your master template
+2. **Test changes** - Ensure everything works
+3. **Copy to specific project folder** - Use `template/` as base
+4. **Customize for specific use case** - Modify content, colors, etc.
+5. **Deploy specific folder** - Only the project folder goes live
 
-To modify the landing page:
+## 🔄 Branch Strategy
 
-- `index.html` - Main HTML structure
-- `styles.css` - All styles and animations
-- `script.js` - Interactive functionality
-- `Images/` - All image assets
+- `main` - Live/production code (construction folder)
+- `development` - Template development (template folder)
+- `feature/*` - New features being developed
 
-## License
+## 📝 How to Create a New Landing Page
 
-All rights reserved. This project is proprietary and confidential. 
+1. Copy `template/` folder to a new folder (e.g., `real-estate/`)
+2. Customize the content for your specific industry
+3. Deploy only that folder
+4. Keep `template/` updated with new features
+
+## 🛡️ Security
+
+- Sensitive files (README, .git, etc.) stay in root
+- Only landing page files are in subfolders
+- Each subfolder can be deployed independently 
