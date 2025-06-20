@@ -21,10 +21,13 @@ This repository contains multiple landing page templates and variations for diff
 
 ## 🚀 Publishing
 
-When you deploy your site (e.g., to GitHub Pages, Netlify, or Vercel), you will deploy the **root** of the repository. Your pages will then be accessible via subdirectories:
+This repository uses **GitHub Actions** to automatically deploy the website.
 
-- `yoursite.com/pro/template/`
-- `yoursite.com/pro/construction/`
+- **Trigger:** A push to the `main` branch.
+- **Source:** The contents of the `/pro` folder.
+- **Result:** The `pro` folder is published as the live website.
+
+The workflow is defined in `.github/workflows/deploy.yml`. You do not need to change the deployment settings on GitHub manually.
 
 ## 📋 Workflow
 
