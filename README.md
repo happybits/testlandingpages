@@ -5,7 +5,7 @@ This repository contains multiple landing page templates and variations for diff
 ## 📁 Folder Structure
 
 ```
-├── pages/
+├── pro/
 │   ├── template/          # Master template - edit here for new features
 │   │   ├── index.html
 │   │   ├── styles.css
@@ -23,8 +23,8 @@ This repository contains multiple landing page templates and variations for diff
 
 When you deploy your site (e.g., to GitHub Pages, Netlify, or Vercel), you will deploy the **root** of the repository. Your pages will then be accessible via subdirectories:
 
-- `yoursite.com/pages/template/`
-- `yoursite.com/pages/construction/`
+- `yoursite.com/pro/template/`
+- `yoursite.com/pro/construction/`
 
 ## 📋 Workflow
 
@@ -44,8 +44,8 @@ When you deploy your site (e.g., to GitHub Pages, Netlify, or Vercel), you will 
 
 1. **Run the sync script** with a new project name:
    `./sync-template.sh real-estate`
-2. **Customize the new folder** located at `pages/real-estate/`.
-3. **Deploy the root** of the repository. Your new page will be at `yoursite.com/pages/real-estate/`.
+2. **Customize the new folder** located at `pro/real-estate/`.
+3. **Deploy the root** of the repository. Your new page will be at `yoursite.com/pro/real-estate/`.
 
 ## 🛡️ Security
 

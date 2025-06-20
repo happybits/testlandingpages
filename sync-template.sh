@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to sync template changes to other project folders inside the 'pages' directory
+# Script to sync template changes to other project folders inside the 'pro' directory
 # Usage: ./sync-template.sh [folder-name]
 
 if [ $# -eq 0 ]; then
@@ -9,8 +9,8 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-TARGET_FOLDER="pages/$1"
-SOURCE_FOLDER="pages/template"
+TARGET_FOLDER="pro/$1"
+SOURCE_FOLDER="pro/template"
 
 if [ ! -d "$TARGET_FOLDER" ]; then
     echo "Creating folder: $TARGET_FOLDER"
