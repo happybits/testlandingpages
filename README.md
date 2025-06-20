@@ -5,30 +5,26 @@ This repository contains multiple landing page templates and variations for diff
 ## 📁 Folder Structure
 
 ```
-├── template/          # Master template - edit here for new features
-│   ├── index.html
-│   ├── styles.css
-│   └── script.js
-├── construction/      # Construction-specific landing page
-│   ├── index.html
-│   ├── styles.css
-│   └── script.js
-├── Images/           # Shared images (not accessible when deployed)
-├── Reference/        # Design references
-└── sync-template.sh  # Script to copy template to new projects
+├── pages/
+│   ├── template/          # Master template - edit here for new features
+│   │   ├── index.html
+│   │   ├── styles.css
+│   │   └── script.js
+│   └── construction/      # Construction-specific landing page
+│       ├── index.html
+│       ├── styles.css
+│       └── script.js
+├── Images/                # Shared images (protected from web access)
+├── Reference/             # Design references
+└── sync-template.sh       # Script to copy template to new projects
 ```
 
 ## 🚀 Publishing
 
-### For Template (Development):
-- Edit files in `template/` folder
-- Test changes locally
-- Push to `development` branch
+When you deploy your site (e.g., to GitHub Pages, Netlify, or Vercel), you will deploy the **root** of the repository. Your pages will then be accessible via subdirectories:
 
-### For Construction (Live):
-- Copy changes from `template/` to `construction/`
-- Customize for construction industry
-- Push to `main` branch for live deployment
+- `yoursite.com/pages/template/`
+- `yoursite.com/pages/construction/`
 
 ## 📋 Workflow
 
@@ -46,10 +42,10 @@ This repository contains multiple landing page templates and variations for diff
 
 ## 📝 How to Create a New Landing Page
 
-1. Copy `template/` folder to a new folder: `./sync-template.sh [project-name]`
-2. Customize the content for your specific industry
-3. Deploy only that folder
-4. Keep `template/` updated with new features
+1. **Run the sync script** with a new project name:
+   `./sync-template.sh real-estate`
+2. **Customize the new folder** located at `pages/real-estate/`.
+3. **Deploy the root** of the repository. Your new page will be at `yoursite.com/pages/real-estate/`.
 
 ## 🛡️ Security
 
