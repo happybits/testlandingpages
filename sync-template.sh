@@ -18,11 +18,11 @@ fi
 
 echo "Syncing template to $TARGET_FOLDER..."
 
-# Copy all files from template to target folder
+# Copy all files from template to target folder (excluding Images)
 cp template/index.html "$TARGET_FOLDER/"
 cp template/styles.css "$TARGET_FOLDER/"
 cp template/script.js "$TARGET_FOLDER/"
-cp -r template/Images "$TARGET_FOLDER/"
 
 echo "✅ Template synced to $TARGET_FOLDER successfully!"
-echo "📝 Remember to customize the content for $TARGET_FOLDER" 
+echo "📝 Remember to customize the content for $TARGET_FOLDER"
+echo "🖼️  Images are shared from root Images/ folder" 

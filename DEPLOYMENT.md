@@ -55,23 +55,27 @@ git push origin main
 ### For Construction Landing Page:
 - Deploy `construction/` folder
 - URL: `https://yoursite.com/construction/`
+- Images are referenced from root `Images/` folder
 
 ### For Template (Development):
 - Deploy `template/` folder
 - URL: `https://yoursite.com/template/`
+- Images are referenced from root `Images/` folder
 
 ### For New Projects:
 1. Create new folder: `./sync-template.sh real-estate`
 2. Customize content in `real-estate/` folder
 3. Deploy `real-estate/` folder
 
-## 🛡️ Safety Features
+## 🛡️ Security Features
 
 - ✅ Template changes don't affect live sites
 - ✅ Each project has its own folder
 - ✅ Development branch for testing
 - ✅ Main branch for live deployment
 - ✅ Easy sync between template and projects
+- ✅ Images folder is shared but protected from direct web access
+- ✅ Only landing page files are deployed
 
 ## 📝 Customization Checklist
 
@@ -83,6 +87,13 @@ When creating a new landing page:
 - [ ] Update feature descriptions
 - [ ] Modify testimonials
 - [ ] Change color scheme (if needed)
-- [ ] Update images
+- [ ] Update images (in root Images/ folder)
 - [ ] Test on mobile
-- [ ] Deploy specific folder 
+- [ ] Deploy specific folder
+
+## 🖼️ Image Management
+
+- All images are stored in the root `Images/` folder
+- Images are referenced using `../Images/` path in subfolders
+- When deployed, only the specific project folder is accessible
+- Creative assets are protected from direct web access 

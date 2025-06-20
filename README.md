@@ -8,14 +8,14 @@ This repository contains multiple landing page templates and variations for diff
 ├── template/          # Master template - edit here for new features
 │   ├── index.html
 │   ├── styles.css
-│   ├── script.js
-│   └── Images/
+│   └── script.js
 ├── construction/      # Construction-specific landing page
 │   ├── index.html
 │   ├── styles.css
-│   ├── script.js
-│   └── Images/
-└── Reference/         # Design references
+│   └── script.js
+├── Images/           # Shared images (not accessible when deployed)
+├── Reference/        # Design references
+└── sync-template.sh  # Script to copy template to new projects
 ```
 
 ## 🚀 Publishing
@@ -46,13 +46,15 @@ This repository contains multiple landing page templates and variations for diff
 
 ## 📝 How to Create a New Landing Page
 
-1. Copy `template/` folder to a new folder (e.g., `real-estate/`)
+1. Copy `template/` folder to a new folder: `./sync-template.sh [project-name]`
 2. Customize the content for your specific industry
 3. Deploy only that folder
 4. Keep `template/` updated with new features
 
 ## 🛡️ Security
 
-- Sensitive files (README, .git, etc.) stay in root
-- Only landing page files are in subfolders
-- Each subfolder can be deployed independently 
+- ✅ Sensitive files (README, .git, etc.) stay in root
+- ✅ Images folder is shared but not deployed with subfolders
+- ✅ Only landing page files are in subfolders
+- ✅ Each subfolder can be deployed independently
+- ✅ Creative assets are protected from direct web access 
