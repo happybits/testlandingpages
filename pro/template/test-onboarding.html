@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Test - Marco Polo Pro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div style="padding: 50px; text-align: center;">
+        <h1>Marco Polo Pro - Onboarding Flow Test</h1>
+        <p>The onboarding modal should open automatically in 2 seconds...</p>
+        <button id="start-onboarding" style="padding: 15px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Start Onboarding Flow
+        </button>
+    </div>
+
+    <!-- Copy the entire onboarding modal from index.html -->
+    <div id="onboarding-modal" class="modal">
+        <div class="modal-content onboarding-modal">
+            <div class="modal-header">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Step 1: Account Creation -->
+                <div class="onboarding-step active" data-step="1">
+                    <div class="step-content">
+                        <h2>Create Your Account</h2>
+                        <p>Let's get you set up with Marco Polo Pro</p>
+                        
+                        <form class="onboarding-form">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Work Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="company">Company Name</label>
+                                <input type="text" id="company" name="company" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="role">Your Role</label>
+                                <select id="role" name="role" required>
+                                    <option value="">Select your role</option>
+                                    <option value="project-manager">Project Manager</option>
+                                    <option value="superintendent">Superintendent</option>
+                                    <option value="foreman">Foreman</option>
+                                    <option value="contractor">Contractor</option>
+                                    <option value="architect">Architect</option>
+                                    <option value="engineer">Engineer</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </form>
+                        
+                        <div class="step-navigation">
+                            <button class="btn btn-primary next-step">Continue</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Product Tour -->
+                <div class="onboarding-step" data-step="2">
+                    <div class="step-content">
+                        <h2>See Marco Polo Pro in Action</h2>
+                        <p>Here's how your team will communicate on the job site</p>
+                        
+                        <div class="tour-container">
+                            <div class="phone-mockup">
+                                <div class="phone-screen">
+                                    <div class="tour-slide active" data-slide="1">
+                                        <img src="Images/Frame 134.png" alt="Record video messages">
+                                        <div class="slide-content">
+                                            <h3>Record Video Messages</h3>
+                                            <p>Capture issues, updates, and instructions with video messages that show exactly what you mean.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tour-slide" data-slide="2">
+                                        <img src="Images/Frame 172.png" alt="Team communication">
+                                        <div class="slide-content">
+                                            <h3>Keep Everyone Connected</h3>
+                                            <p>Your entire team stays in the loop with threaded conversations and real-time updates.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tour-slide" data-slide="3">
+                                        <img src="Images/Camera View.png" alt="Visual documentation">
+                                        <div class="slide-content">
+                                            <h3>Document Progress Visually</h3>
+                                            <p>Build a visual timeline of your project with photos and videos that tell the complete story.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="tour-controls">
+                                    <button class="tour-btn prev-slide" disabled>‹</button>
+                                    <div class="tour-dots">
+                                        <span class="dot active" data-slide="1"></span>
+                                        <span class="dot" data-slide="2"></span>
+                                        <span class="dot" data-slide="3"></span>
+                                    </div>
+                                    <button class="tour-btn next-slide">›</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="btn btn-secondary prev-step">Back</button>
+                            <button class="btn btn-primary next-step">Continue</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Add Team Members -->
+                <div class="onboarding-step" data-step="3">
+                    <div class="step-content">
+                        <h2>Add Your Team</h2>
+                        <p>Get your team members set up with Marco Polo Pro</p>
+                        
+                        <div class="team-setup">
+                            <div class="invite-options">
+                                <div class="invite-option">
+                                    <h3>📱 Send Text Invites</h3>
+                                    <p>Send invitation links via text message</p>
+                                    
+                                    <div class="phone-input-group">
+                                        <input type="tel" placeholder="Enter phone number" class="phone-input">
+                                        <button class="btn btn-outline add-phone">Add</button>
+                                    </div>
+                                    
+                                    <div class="phone-list"></div>
+                                    
+                                    <button class="btn btn-primary send-invites" style="display: none;">
+                                        <span class="btn-text">Send Text Invites</span>
+                                        <span class="btn-loading" style="display: none;">Sending...</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="invite-divider">
+                                    <span>OR</span>
+                                </div>
+                                
+                                <div class="invite-option">
+                                    <h3>🎥 Record Video Invitation</h3>
+                                    <p>Record a personal video invitation for your team</p>
+                                    
+                                    <div class="video-recorder">
+                                        <div class="video-preview">
+                                            <video id="video-preview" autoplay muted></video>
+                                            <div class="video-placeholder">
+                                                <div class="camera-icon">📹</div>
+                                                <p>Click "Start Recording" to begin</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="recording-controls">
+                                            <button class="btn btn-primary start-recording">Start Recording</button>
+                                            <button class="btn btn-danger stop-recording" style="display: none;">Stop Recording</button>
+                                            <button class="btn btn-success send-video" style="display: none;">Send Video Invite</button>
+                                        </div>
+                                        
+                                        <div class="recording-status"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="btn btn-secondary prev-step">Back</button>
+                            <button class="btn btn-primary finish-onboarding">Complete Setup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Step -->
+                <div class="onboarding-step" data-step="success">
+                    <div class="step-content success-content">
+                        <div class="success-animation">
+                            <div class="checkmark">✓</div>
+                        </div>
+                        
+                        <h2>Welcome to Marco Polo Pro! 🎉</h2>
+                        <p>Your account is set up and your team invitations are on their way.</p>
+                        
+                        <div class="success-details">
+                            <div class="success-item">
+                                <span class="icon">👤</span>
+                                <span>Account created successfully</span>
+                            </div>
+                            <div class="success-item">
+                                <span class="icon">👥</span>
+                                <span class="team-count">0 team members invited</span>
+                            </div>
+                            <div class="success-item">
+                                <span class="icon">📱</span>
+                                <span>Mobile app download links sent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="next-steps">
+                            <h3>What's Next?</h3>
+                            <ul>
+                                <li>Download the Marco Polo Pro mobile app</li>
+                                <li>Start your first project</li>
+                                <li>Invite more team members as needed</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="btn btn-primary get-started">Get Started</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Auto-open the modal after 2 seconds
+        setTimeout(() => {
+            const modal = document.getElementById('onboarding-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }, 2000);
+    </script>
+</body>
+</html> 
