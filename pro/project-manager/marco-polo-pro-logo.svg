@@ -1,0 +1,28 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer circle background -->
+  <circle cx="24" cy="24" r="24" fill="white"/>
+  
+  <!-- Colorful segments -->
+  <g>
+    <!-- Green segment -->
+    <path d="M24 24 L24 0 A24 24 0 0 1 41.57 17.43 Z" fill="#00D4AA"/>
+    
+    <!-- Blue segment -->
+    <path d="M24 24 L41.57 17.43 A24 24 0 0 1 41.57 30.57 Z" fill="#4285F4"/>
+    
+    <!-- Purple segment -->
+    <path d="M24 24 L41.57 30.57 A24 24 0 0 1 24 48 Z" fill="#8B5CF6"/>
+    
+    <!-- Red segment -->
+    <path d="M24 24 L24 48 A24 24 0 0 1 6.43 30.57 Z" fill="#EF4444"/>
+    
+    <!-- Orange segment -->
+    <path d="M24 24 L6.43 30.57 A24 24 0 0 1 6.43 17.43 Z" fill="#F97316"/>
+    
+    <!-- Yellow segment -->
+    <path d="M24 24 L6.43 17.43 A24 24 0 0 1 24 0 Z" fill="#FDE047"/>
+  </g>
+  
+  <!-- Center white circle -->
+  <circle cx="24" cy="24" r="6" fill="white"/>
+</svg> 
