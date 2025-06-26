@@ -88,6 +88,13 @@ body::before {
     height: 32px;
     margin-right: 8px;
     border-radius: 8px;
+    /* Debug styles to ensure visibility */
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 10;
+    /* Add a subtle border to see if the element is there */
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .logo-text {
@@ -2686,4 +2693,9 @@ footer::before {
     border-radius: 16px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     background: #000;
-} 
+}
+
+/* Debug: Add background color to logo container to see layout */
+.logo {
+    /* Temporary debug background - REMOVED */
+}
