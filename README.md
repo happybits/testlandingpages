@@ -55,7 +55,9 @@ The workflow is defined in `.github/workflows/deploy.yml`. You do not need to ch
 ## 🛡️ Security
 
 - ✅ Sensitive files (README, .git, etc.) stay in root
-- ✅ Images folder is shared but not deployed with subfolders
+- ✅ Images centralized in pro/Images/ for security and maintainability
+- ✅ Smart fallback paths work for both localhost and production
 - ✅ Only landing page files are in subfolders
 - ✅ Each subfolder can be deployed independently
-- ✅ Creative assets are protected from direct web access 
+- ✅ Creative assets are protected from direct web access
+- ✅ Single source of truth for all production images 
