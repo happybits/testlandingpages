@@ -74,7 +74,7 @@ git push origin main
 - ✅ Development branch for testing
 - ✅ Main branch for live deployment
 - ✅ Easy sync between template and projects
-- ✅ Images folder is shared but protected from direct web access
+- ✅ Images are centralized in pro/Images/ for security and maintainability
 - ✅ Only landing page files are deployed
 
 ## 📝 Customization Checklist
@@ -93,7 +93,8 @@ When creating a new landing page:
 
 ## 🖼️ Image Management
 
-- All images are stored in the root `Images/` folder
-- Images are referenced using `../Images/` path in subfolders
-- When deployed, only the specific project folder is accessible
-- Creative assets are protected from direct web access 
+- All production images are stored in `pro/Images/` folder
+- Images are referenced using `../Images/` path from role subfolders
+- When deployed, only the pro/ directory content is accessible
+- Root Images/ folder remains protected from direct web access
+- Single source of truth for all production images 

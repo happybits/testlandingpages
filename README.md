@@ -14,7 +14,9 @@ This repository contains multiple landing page templates and variations for diff
 │       ├── index.html
 │       ├── styles.css
 │       └── script.js
-├── Images/                # Shared images (protected from web access)
+├── Images/                # Development images (protected from web access)
+├── pro/
+│   ├── Images/            # Shared production images (deployed securely)
 ├── Reference/             # Design references
 └── sync-template.sh       # Script to copy template to new projects
 ```

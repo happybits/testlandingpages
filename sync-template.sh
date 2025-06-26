@@ -28,7 +28,7 @@ cp "$SOURCE_FOLDER/script.js" "$TARGET_FOLDER/"
 
 echo "✅ Template synced to $TARGET_FOLDER successfully!"
 echo "📝 Remember to customize the content for the $1 role."
-echo "🖼️  Images are shared from the root Images/ folder."
+echo "🖼️  Images are shared from the pro/Images/ folder."
 echo ""
 echo "🌐 Your new page will be accessible at:"
 echo "   www.marcopolo.me/business/pro/$1" 
