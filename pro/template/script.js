@@ -469,19 +469,33 @@ function initializeOnboarding() {
 
     // Update progress
     function updateProgress(step) {
+        const progressPercentage = document.getElementById('progress-percentage');
+        
         if (progressFill) {
             let progress;
-            if (step === 'success') {
+            if (step === 'success' || step === 5) {
                 progress = 100;
             } else {
-                progress = (step / 3) * 100;
+                progress = (step / 5) * 100;
             }
             progressFill.style.width = `${progress}%`;
         }
         
+        if (progressPercentage) {
+            const percentages = {
+                1: '20%',
+                2: '40%',
+                3: '60%',
+                4: '80%',
+                5: '100%',
+                'success': '100%'
+            };
+            progressPercentage.textContent = percentages[step] || '20%';
+        }
+        
         if (progressSteps) {
             progressSteps.forEach((stepEl, index) => {
-                if (step === 'success') {
+                if (step === 'success' || step === 5) {
                     stepEl.classList.add('completed');
                     stepEl.classList.remove('active');
                 } else if (index < step) {
@@ -562,11 +576,11 @@ function initializeOnboarding() {
                 }
             }
             
-            if (currentStep < 3) {
+            if (currentStep < 4) {
                 showStep(currentStep + 1);
-            } else if (currentStep === 3) {
+            } else if (currentStep === 4) {
                 // Show success step
-                showStep('success');
+                showStep(5);
             }
         }
         
@@ -594,6 +608,49 @@ function initializeOnboarding() {
             closeModal();
         }
     });
+
+    // Global function for closing modal (called from success button)
+    window.closeModal = closeModal;
+
+    // Handle polo approval from step 4
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'polo-approve-btn') {
+            e.preventDefault();
+            // Show sharing options in the same step
+            const sharingOptions = document.getElementById('sharing-options-step');
+            if (sharingOptions) {
+                sharingOptions.style.display = 'block';
+            }
+        }
+
+        if (e.target.id === 'polo-retake-step-btn') {
+            e.preventDefault();
+            // Go back to recording step
+            showStep(3);
+            retakePoloRecording();
+        }
+
+        // Handle sharing method clicks
+        if (e.target.classList.contains('share-btn') || e.target.classList.contains('copy-btn')) {
+            e.preventDefault();
+            const method = e.target.getAttribute('data-method');
+            handleSharingMethod(method, e.target);
+        }
+
+        if (e.target.id === 'skip-recording') {
+            e.preventDefault();
+            // Skip directly to step 5 (success)
+            showStep(5);
+        }
+
+        if (e.target.id === 'skip-invites-step') {
+            e.preventDefault();
+            // Move to success step
+            showStep(5);
+        }
+    });
+
+    console.log('Onboarding script initialized');
 }
 
 function initializeProductTour() {
@@ -739,36 +796,130 @@ function initializeVideoRecording() {
     let recordedChunks = [];
     let stream;
 
-    async function startRecording() {
+    async function startPoloRecording() {
+        console.log('Starting polo recording');
+        
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: true, 
-                audio: true 
+            // First, let's check available devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioDevices = devices.filter(device => device.kind === 'audioinput');
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log('Available audio devices:', audioDevices.length);
+            audioDevices.forEach((device, index) => {
+                console.log(`Audio ${index}:`, device.label || `Device ${device.deviceId.substring(0, 8)}...`);
             });
             
-            videoPreview.srcObject = stream;
-            videoPreview.play();
+            console.log('Available video devices:', videoDevices.length);
+            videoDevices.forEach((device, index) => {
+                console.log(`Video ${index}:`, device.label || `Device ${device.deviceId.substring(0, 8)}...`);
+            });
 
-            mediaRecorder = new MediaRecorder(stream);
+            // Request camera access with higher quality for Marco Polo style
+            const constraints = { 
+                video: { 
+                    width: { ideal: 720 },
+                    height: { ideal: 1280 },
+                    facingMode: 'user'
+                }, 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 44100
+                }
+            };
+            
+            console.log('Requesting media with constraints:', constraints);
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            // Check what we actually got
+            const audioTracks = stream.getAudioTracks();
+            const videoTracks = stream.getVideoTracks();
+            
+            console.log('Audio tracks received:', audioTracks.length);
+            audioTracks.forEach((track, index) => {
+                console.log(`Audio track ${index}:`, {
+                    label: track.label,
+                    enabled: track.enabled,
+                    muted: track.muted,
+                    readyState: track.readyState,
+                    settings: track.getSettings()
+                });
+            });
+            
+            console.log('Video tracks received:', videoTracks.length);
+            videoTracks.forEach((track, index) => {
+                console.log(`Video track ${index}:`, {
+                    label: track.label,
+                    enabled: track.enabled,
+                    muted: track.muted,
+                    readyState: track.readyState
+                });
+            });
+
+            const videoContainer = document.getElementById('video-container');
+            const cameraStream_element = document.getElementById('camera-stream');
+            
+            if (cameraStream_element) {
+                cameraStream_element.srcObject = stream;
+                cameraStream_element.classList.remove('hidden');
+            }
+
+            // Hide placeholder
+            const placeholder = document.getElementById('camera-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
+            // Setup media recorder with fallback codec support
             recordedChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => {
+            let recorderOptions = { mimeType: 'video/webm;codecs=vp8,opus' };
+            
+            // Check codec support and fallback if needed
+            if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+                console.log('Primary codec not supported, trying fallback');
+                recorderOptions = { mimeType: 'video/webm' };
+                if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+                    console.log('WebM not supported, using default');
+                    recorderOptions = {};
+                }
+            }
+            
+            console.log('Using MediaRecorder with options:', recorderOptions);
+            mediaRecorder = new MediaRecorder(stream, recorderOptions);
+            
+            mediaRecorder.ondataavailable = function(event) {
                 if (event.data.size > 0) {
                     recordedChunks.push(event.data);
+                    console.log('Recording chunk received, size:', event.data.size);
                 }
             };
 
-            mediaRecorder.onstop = () => {
+            mediaRecorder.onstop = function() {
+                console.log('Recording stopped, creating blob from', recordedChunks.length, 'chunks');
                 const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                showVideoPreview(url);
+                console.log('Created blob, size:', blob.size, 'type:', blob.type);
+                recordedVideo = blob;
+                showPoloPreview(blob);
             };
 
+            // Start recording
             mediaRecorder.start();
-            
-            recordBtn.style.display = 'none';
-            stopBtn.style.display = 'inline-block';
-            recordingStatus.textContent = 'Recording...';
+
+            // Update UI for Marco Polo interface
+            document.getElementById('main-record-btn').classList.add('hidden');
+            document.getElementById('stop-record-btn').classList.remove('hidden');
+            document.getElementById('recording-overlay').classList.remove('hidden');
+
+            // Start timer
+            startRecordingTimer();
+
+            // Start audio level monitoring if available
+            if (window.audioLevelMonitor) {
+                console.log('Starting audio level monitoring for external webcam');
+                window.audioLevelMonitor();
+            }
 
         } catch (error) {
             console.error('Error accessing camera:', error);
@@ -776,52 +927,294 @@ function initializeVideoRecording() {
         }
     }
 
-    function stopRecording() {
+    function stopPoloRecording() {
+        console.log('Stopping polo recording');
+        
         if (mediaRecorder && mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
         }
-        
+
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
         }
 
-        stopBtn.style.display = 'none';
-        recordingStatus.textContent = 'Recording complete';
+        // Update UI for Marco Polo interface
+        document.getElementById('main-record-btn').classList.remove('hidden');
+        document.getElementById('stop-record-btn').classList.add('hidden');
+        document.getElementById('recording-overlay').classList.add('hidden');
+
+        stopRecordingTimer();
     }
 
-    function showVideoPreview(url) {
-        videoPreview.srcObject = null;
-        videoPreview.src = url;
-        videoPreview.controls = true;
-        retakeBtn.style.display = 'inline-block';
-        sendVideoBtn.style.display = 'inline-block';
+    let recordingTimer;
+    let recordingSeconds = 0;
+
+    function startRecordingTimer() {
+        recordingSeconds = 0;
+        const timeDisplay = document.getElementById('recording-time');
+        
+        recordingTimer = setInterval(() => {
+            recordingSeconds++;
+            const minutes = Math.floor(recordingSeconds / 60);
+            const seconds = recordingSeconds % 60;
+            if (timeDisplay) {
+                timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
     }
 
-    function resetRecording() {
-        videoPreview.src = '';
-        videoPreview.controls = false;
-        recordBtn.style.display = 'inline-block';
-        retakeBtn.style.display = 'none';
-        sendVideoBtn.style.display = 'none';
-        recordingStatus.textContent = '';
+    function stopRecordingTimer() {
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+        }
     }
 
-    function sendVideoInvite() {
-        sendVideoBtn.textContent = 'Sending...';
-        sendVideoBtn.disabled = true;
+    function showPoloPreview(videoBlob) {
+        console.log('Showing polo preview');
+        console.log('Video blob size:', videoBlob.size, 'type:', videoBlob.type);
+        
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const recordedPoloPreview = document.getElementById('recorded-polo-preview');
+        
+        if (recordedPoloPreview) {
+            recordedPoloPreview.src = videoUrl;
+            recordedPoloPreview.muted = false; // Ensure audio is not muted
+            recordedPoloPreview.volume = 1.0; // Set volume to maximum
+            recordedPoloPreview.controls = true; // Ensure controls are visible
+            
+            console.log('Video element configured: muted =', recordedPoloPreview.muted, 'volume =', recordedPoloPreview.volume);
+            
+            // Wait for metadata to load, then ensure audio is enabled
+            recordedPoloPreview.addEventListener('loadedmetadata', function() {
+                console.log('Video metadata loaded');
+                console.log('Video duration:', this.duration);
+                console.log('Video has audio tracks:', this.webkitAudioDecodedByteCount !== undefined ? this.webkitAudioDecodedByteCount : 'unknown');
+                console.log('Video element muted:', this.muted, 'volume:', this.volume);
+                this.muted = false;
+                this.volume = 1.0;
+            });
+            
+            // Add error handling
+            recordedPoloPreview.addEventListener('error', function(e) {
+                console.error('Video playback error:', e);
+            });
+            
+            // Try to play with audio after user interaction
+            recordedPoloPreview.addEventListener('click', function() {
+                this.muted = false;
+                this.volume = 1.0;
+                console.log('Video clicked, ensuring audio is unmuted');
+            });
+            
+            // Also try when play starts
+            recordedPoloPreview.addEventListener('play', function() {
+                this.muted = false;
+                this.volume = 1.0;
+                console.log('Video started playing, audio should be enabled');
+            });
+        }
 
-        setTimeout(() => {
-            sendVideoBtn.textContent = 'Sent!';
+        // Move to step 4 (preview step) after recording
+        showStep(4);
+    }
+
+    function retakePoloRecording() {
+        console.log('Retaking polo recording');
+        
+        const recordingArea = document.querySelector('.recording-area');
+        const poloPreview = document.getElementById('polo-preview');
+        const placeholder = document.querySelector('.camera-placeholder');
+        const cameraStreamElement = document.getElementById('camera-stream');
+
+        if (recordingArea) {
+            recordingArea.style.display = 'block';
+        }
+        
+        if (poloPreview) {
+            poloPreview.classList.add('hidden');
+        }
+
+        if (placeholder) {
+            placeholder.style.display = 'block';
+        }
+
+        if (cameraStreamElement) {
+            cameraStreamElement.classList.add('hidden');
+        }
+
+        recordedVideo = null;
+        recordedChunks = [];
+    }
+
+    function showSharingOptions() {
+        console.log('Showing sharing options');
+        
+        const poloPreview = document.getElementById('polo-preview');
+        const sharingOptions = document.getElementById('sharing-options');
+        const invitesNextBtn = document.getElementById('invites-next');
+
+        if (poloPreview) {
+            poloPreview.style.display = 'none';
+        }
+        
+        if (sharingOptions) {
+            sharingOptions.classList.remove('hidden');
+        }
+
+        if (invitesNextBtn) {
+            invitesNextBtn.classList.remove('hidden');
+        }
+    }
+
+    function handleSharingMethod(method, buttonElement) {
+        console.log('Handling sharing method:', method);
+        
+        let input;
+        let message = '';
+
+        switch (method) {
+            case 'email':
+                input = document.querySelector('.email-input');
+                if (input && input.value) {
+                    const emails = input.value.split(',').map(e => e.trim()).filter(e => e);
+                    invitesSent += emails.length;
+                    message = `Email invitations sent to ${emails.length} recipients!`;
+                } else {
+                    alert('Please enter at least one email address');
+                    return;
+                }
+                break;
+                
+            case 'text':
+                input = document.querySelector('.phone-input');
+                if (input && input.value) {
+                    const phones = input.value.split(',').map(p => p.trim()).filter(p => p);
+                    invitesSent += phones.length;
+                    message = `Text invitations sent to ${phones.length} recipients!`;
+                } else {
+                    alert('Please enter at least one phone number');
+                    return;
+                }
+                break;
+                
+            case 'link':
+                invitesSent += 1;
+                message = 'Invitation link copied to clipboard!';
+                // Actually copy to clipboard
+                const shareLink = document.querySelector('.share-link');
+                if (shareLink) {
+                    shareLink.select();
+                    document.execCommand('copy');
+                }
+                break;
+        }
+
+        // Show success message on button
+        if (buttonElement) {
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Sent!';
+            buttonElement.style.background = '#34c759';
+            
             setTimeout(() => {
-                document.querySelector('.next-step').click();
-            }, 1000);
-        }, 2000);
+                buttonElement.textContent = originalText;
+                buttonElement.style.background = '';
+            }, 2000);
+        }
+
+        // Show notification
+        if (message) {
+            alert(message);
+        }
     }
 
-    recordBtn.addEventListener('click', startRecording);
-    stopBtn.addEventListener('click', stopRecording);
-    retakeBtn.addEventListener('click', resetRecording);
-    sendVideoBtn.addEventListener('click', sendVideoInvite);
+    // Step 4: Success Screen
+    function initializeSuccessScreen() {
+        console.log('Initializing success screen');
+
+        // Update final stats
+        const finalFeaturesCount = document.getElementById('final-features-count');
+        const finalInvitesSent = document.getElementById('final-invites-sent');
+        const finalTimeSaved = document.getElementById('final-time-saved');
+
+        if (finalFeaturesCount) {
+            finalFeaturesCount.textContent = selectedFeatures.length;
+        }
+        
+        if (finalInvitesSent) {
+            finalInvitesSent.textContent = invitesSent;
+        }
+
+        if (finalTimeSaved) {
+            const timeSaved = Math.max(2, selectedFeatures.length * 1.5);
+            finalTimeSaved.textContent = `${Math.round(timeSaved)}hrs`;
+        }
+
+        // Success screen buttons
+        const sendMoreInvitesBtn = document.querySelector('.success-actions .secondary');
+        if (sendMoreInvitesBtn) {
+            sendMoreInvitesBtn.addEventListener('click', function() {
+                showStep(3);
+            });
+        }
+    }
+
+    function resetOnboarding() {
+        console.log('Resetting onboarding');
+        
+        currentStep = 1;
+        selectedFeatures = [];
+        recordedVideo = null;
+        formData = {};
+        invitesSent = 0;
+        recordingSeconds = 0;
+
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+        }
+
+        // Reset form
+        if (accountForm) {
+            accountForm.reset();
+        }
+
+        // Reset UI elements
+        const elementsToReset = [
+            '.recording-area',
+            '.camera-placeholder',
+            '#polo-preview',
+            '#sharing-options',
+            '#invites-next'
+        ];
+
+        elementsToReset.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.display = '';
+                element.classList.remove('hidden');
+            }
+        });
+
+        // Hide specific elements
+        const elementsToHide = [
+            '#polo-stop-btn',
+            '#recording-status',
+            '#camera-stream'
+        ];
+
+        elementsToHide.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
+    }
+
+    console.log('Onboarding script initialized');
 }
 
 // Initialize onboarding and success functionality when DOM is loaded
@@ -845,4 +1238,824 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeProductTour();
     initializeTeamInvitation();
     initializeVideoRecording();
-}); 
+});
+
+// Marco Polo Pro Landing Page Script
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Marco Polo Pro script loaded');
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Header scroll effect
+    let lastScrollTop = 0;
+    const header = document.querySelector('.header');
+    if (header) {
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+    }
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
+    const mobileNav = document.querySelector('.mobile-nav');
+    
+    if (mobileMenuButton && mobileNav) {
+        mobileMenuButton.addEventListener('click', function() {
+            mobileNav.classList.toggle('active');
+        });
+    }
+
+    // FAQ functionality
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        if (question) {
+            question.addEventListener('click', function() {
+                const isActive = item.classList.contains('active');
+                
+                // Close all FAQ items
+                faqItems.forEach(faq => faq.classList.remove('active'));
+                
+                // Open clicked item if it wasn't active
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        }
+    });
+
+    // ===== ONBOARDING FLOW =====
+    
+    // Onboarding variables
+    let currentStep = 1;
+    let selectedFeatures = [];
+    let recordedVideo = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let cameraStream = null;
+    let formData = {};
+    let invitesSent = 0;
+
+    // DOM elements
+    const modal = document.getElementById('onboarding-modal');
+    const startButton = document.getElementById('start-onboarding');
+    const closeButton = document.getElementById('close-onboarding');
+    const progressFill = document.getElementById('progress-fill');
+    const steps = document.querySelectorAll('.onboarding-step');
+    const progressSteps = document.querySelectorAll('.progress-steps .step');
+
+    // Initialize onboarding
+    if (startButton) {
+        startButton.addEventListener('click', openModal);
+    }
+
+    if (closeButton) {
+        closeButton.addEventListener('click', closeModal);
+    }
+
+    // Modal functions
+    function openModal() {
+        console.log('Opening onboarding modal');
+        if (modal) {
+            modal.classList.add('active');
+            currentStep = 1;
+            showStep(1);
+            updateProgress();
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal() {
+        console.log('Closing onboarding modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            resetOnboarding();
+        }
+    }
+
+    // Close modal when clicking backdrop
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Step navigation
+    function showStep(stepNumber) {
+        console.log('Showing step:', stepNumber);
+        
+        // Hide all steps
+        steps.forEach(step => step.classList.remove('active'));
+        
+        // Show current step
+        const currentStepElement = document.getElementById(`step-${stepNumber}`);
+        if (currentStepElement) {
+            currentStepElement.classList.add('active');
+        }
+        
+        // Update progress steps
+        progressSteps.forEach((step, index) => {
+            step.classList.remove('active');
+            if (index + 1 === stepNumber) {
+                step.classList.add('active');
+            }
+        });
+        
+        currentStep = stepNumber;
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const progressPercent = (currentStep / 4) * 100;
+        if (progressFill) {
+            progressFill.style.width = `${progressPercent}%`;
+        }
+    }
+
+    // Step 1: Account Creation
+    const accountForm = document.getElementById('account-form');
+    if (accountForm) {
+        accountForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleAccountSubmit();
+        });
+    }
+
+    // Add event listener to the continue button in step 1
+    const step1ContinueBtn = document.querySelector('#step-1 .next-step');
+    if (step1ContinueBtn) {
+        step1ContinueBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleAccountSubmit();
+        });
+    }
+
+    function handleAccountSubmit() {
+        console.log('Handling account submission');
+        
+        // Collect form data
+        const firstName = document.getElementById('first-name')?.value;
+        const lastName = document.getElementById('last-name')?.value;
+        const phone = document.getElementById('phone')?.value;
+        const email = document.getElementById('email')?.value;
+        const companyName = document.getElementById('company-name')?.value;
+
+        // Basic validation
+        if (!firstName || !lastName || !phone) {
+            alert('Please fill in all required fields (marked with *)');
+            return;
+        }
+
+        // Store form data
+        formData = {
+            firstName,
+            lastName,
+            phone,
+            email,
+            companyName
+        };
+
+        console.log('Form data collected:', formData);
+        
+        // Move to step 2
+        showStep(2);
+        initializeFeatureSelection();
+    }
+
+    // Step 2: Feature Selection
+    function initializeFeatureSelection() {
+        console.log('Initializing feature selection');
+        
+        // Set default selected features (core features)
+        selectedFeatures = [
+            'speed-controls',
+            'background-audio', 
+            'unlimited-storage',
+            'video-transcripts',
+            'photo-voice',
+            'scratchpad'
+        ];
+
+        // Update UI to show selected features
+        updateFeatureSelection();
+        updateSavingsCalculator();
+
+        // Add click handlers to feature items
+        const featureItems = document.querySelectorAll('.feature-item');
+        featureItems.forEach(item => {
+            item.addEventListener('click', function() {
+                toggleFeature(item);
+            });
+        });
+
+        // Step 2 continue button
+        const step2ContinueBtn = document.querySelector('#step-2 .next-step');
+        if (step2ContinueBtn) {
+            step2ContinueBtn.addEventListener('click', function() {
+                console.log('Selected features:', selectedFeatures);
+                showStep(3);
+                initializePoloRecording();
+            });
+        }
+
+        // Step 2 back button
+        const step2BackBtn = document.querySelector('#step-2 .prev-step');
+        if (step2BackBtn) {
+            step2BackBtn.addEventListener('click', function() {
+                showStep(1);
+            });
+        }
+    }
+
+    function toggleFeature(featureItem) {
+        const featureId = featureItem.getAttribute('data-feature');
+        
+        if (featureItem.classList.contains('selected')) {
+            // Unselect feature
+            featureItem.classList.remove('selected');
+            selectedFeatures = selectedFeatures.filter(f => f !== featureId);
+        } else {
+            // Select feature
+            featureItem.classList.add('selected');
+            selectedFeatures.push(featureId);
+        }
+
+        updateSavingsCalculator();
+    }
+
+    function updateFeatureSelection() {
+        const featureItems = document.querySelectorAll('.feature-item');
+        featureItems.forEach(item => {
+            const featureId = item.getAttribute('data-feature');
+            if (selectedFeatures.includes(featureId)) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    function updateSavingsCalculator() {
+        const featureCount = selectedFeatures.length;
+        const timeSaved = Math.max(2, featureCount * 1.5);
+        const moneySaved = Math.max(800, featureCount * 400);
+
+        // Format values
+        const timeSavedText = `${Math.round(timeSaved)} hours`;
+        const moneySavedText = `$${moneySaved.toLocaleString()}`;
+        const featuresText = featureCount;
+
+        // Update top benefits summary
+        const topTimeSaved = document.getElementById('top-time-saved');
+        const topMoneySaved = document.getElementById('top-money-saved');
+        const topFeaturesSelected = document.getElementById('top-features-selected');
+
+        if (topTimeSaved) topTimeSaved.textContent = timeSavedText;
+        if (topMoneySaved) topMoneySaved.textContent = moneySavedText;
+        if (topFeaturesSelected) topFeaturesSelected.textContent = featuresText;
+
+        // Update bottom calculator (existing)
+        const timeSavedElement = document.getElementById('time-saved');
+        const moneySavedElement = document.getElementById('money-saved');
+        const featuresSelectedElement = document.getElementById('features-selected');
+
+        if (timeSavedElement) {
+            timeSavedElement.textContent = timeSavedText;
+        }
+        if (moneySavedElement) {
+            moneySavedElement.textContent = moneySavedText;
+        }
+        if (featuresSelectedElement) {
+            featuresSelectedElement.textContent = featuresText;
+        }
+    }
+
+    // Step 3: Polo Recording
+    function initializePoloRecording() {
+        console.log('Initializing polo recording');
+
+        // Update sender name in preview
+        const senderName = document.getElementById('sender-name');
+        if (senderName && formData.firstName && formData.lastName) {
+            senderName.textContent = `${formData.firstName} ${formData.lastName}`;
+        }
+
+        // Update team name in preview
+        const teamName = document.getElementById('team-name');
+        if (teamName && formData.companyName) {
+            teamName.textContent = formData.companyName;
+        }
+
+        // Marco Polo recording controls
+        const mainRecordBtn = document.getElementById('main-record-btn');
+        const stopRecordBtn = document.getElementById('stop-record-btn');
+        const poloRetakeBtn = document.getElementById('polo-retake-btn');
+        const poloContinueBtn = document.getElementById('polo-continue-btn');
+
+        if (mainRecordBtn) {
+            mainRecordBtn.addEventListener('click', startPoloRecording);
+        }
+        if (stopRecordBtn) {
+            stopRecordBtn.addEventListener('click', stopPoloRecording);
+        }
+        if (poloRetakeBtn) {
+            poloRetakeBtn.addEventListener('click', retakePoloRecording);
+        }
+        if (poloContinueBtn) {
+            poloContinueBtn.addEventListener('click', showSharingOptions);
+        }
+
+        // Sharing method handlers
+        const shareButtons = document.querySelectorAll('.share-btn');
+        shareButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const method = this.closest('.sharing-method').getAttribute('data-method');
+                handleSharingMethod(method, this);
+            });
+        });
+
+        // Copy link button
+        const copyBtn = document.querySelector('.copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                const linkInput = document.querySelector('.share-link');
+                if (linkInput) {
+                    linkInput.select();
+                    document.execCommand('copy');
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = 'Copy Link';
+                    }, 2000);
+                }
+            });
+        }
+
+        // Step 3 navigation
+        const step3BackBtn = document.querySelector('#step-3 .prev-step');
+        const skipInvitesBtn = document.getElementById('skip-invites');
+        const invitesNextBtn = document.getElementById('invites-next');
+
+        if (step3BackBtn) {
+            step3BackBtn.addEventListener('click', function() {
+                showStep(2);
+            });
+        }
+
+        if (skipInvitesBtn) {
+            skipInvitesBtn.addEventListener('click', function() {
+                showStep(4);
+                initializeSuccessScreen();
+            });
+        }
+
+        if (invitesNextBtn) {
+            invitesNextBtn.addEventListener('click', function() {
+                showStep(4);
+                initializeSuccessScreen();
+            });
+        }
+    }
+
+    async function startPoloRecording() {
+        console.log('Starting polo recording');
+        
+        try {
+            // First, let's check available devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioDevices = devices.filter(device => device.kind === 'audioinput');
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log('Available audio devices:', audioDevices.length);
+            audioDevices.forEach((device, index) => {
+                console.log(`Audio ${index}:`, device.label || `Device ${device.deviceId.substring(0, 8)}...`);
+            });
+            
+            console.log('Available video devices:', videoDevices.length);
+            videoDevices.forEach((device, index) => {
+                console.log(`Video ${index}:`, device.label || `Device ${device.deviceId.substring(0, 8)}...`);
+            });
+
+            // Request camera access with higher quality for Marco Polo style
+            const constraints = { 
+                video: { 
+                    width: { ideal: 720 },
+                    height: { ideal: 1280 },
+                    facingMode: 'user'
+                }, 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 44100
+                }
+            };
+            
+            console.log('Requesting media with constraints:', constraints);
+            cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            // Check what we actually got
+            const audioTracks = cameraStream.getAudioTracks();
+            const videoTracks = cameraStream.getVideoTracks();
+            
+            console.log('Audio tracks received:', audioTracks.length);
+            audioTracks.forEach((track, index) => {
+                console.log(`Audio track ${index}:`, {
+                    label: track.label,
+                    enabled: track.enabled,
+                    muted: track.muted,
+                    readyState: track.readyState,
+                    settings: track.getSettings()
+                });
+            });
+            
+            console.log('Video tracks received:', videoTracks.length);
+            videoTracks.forEach((track, index) => {
+                console.log(`Video track ${index}:`, {
+                    label: track.label,
+                    enabled: track.enabled,
+                    muted: track.muted,
+                    readyState: track.readyState
+                });
+            });
+
+            const videoContainer = document.getElementById('video-container');
+            const cameraStream_element = document.getElementById('camera-stream');
+            
+            if (cameraStream_element) {
+                cameraStream_element.srcObject = cameraStream;
+                cameraStream_element.classList.remove('hidden');
+            }
+
+            // Hide placeholder
+            const placeholder = document.getElementById('camera-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
+            // Setup media recorder with fallback codec support
+            recordedChunks = [];
+            let recorderOptions = { mimeType: 'video/webm;codecs=vp8,opus' };
+            
+            // Check codec support and fallback if needed
+            if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+                console.log('Primary codec not supported, trying fallback');
+                recorderOptions = { mimeType: 'video/webm' };
+                if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+                    console.log('WebM not supported, using default');
+                    recorderOptions = {};
+                }
+            }
+            
+            console.log('Using MediaRecorder with options:', recorderOptions);
+            mediaRecorder = new MediaRecorder(cameraStream, recorderOptions);
+            
+            mediaRecorder.ondataavailable = function(event) {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                    console.log('Recording chunk received, size:', event.data.size);
+                }
+            };
+
+            mediaRecorder.onstop = function() {
+                console.log('Recording stopped, creating blob from', recordedChunks.length, 'chunks');
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                console.log('Created blob, size:', blob.size, 'type:', blob.type);
+                recordedVideo = blob;
+                showPoloPreview(blob);
+            };
+
+            // Start recording
+            mediaRecorder.start();
+
+            // Update UI for Marco Polo interface
+            document.getElementById('main-record-btn').classList.add('hidden');
+            document.getElementById('stop-record-btn').classList.remove('hidden');
+            document.getElementById('recording-overlay').classList.remove('hidden');
+
+            // Start timer
+            startRecordingTimer();
+
+            // Start audio level monitoring if available
+            if (window.audioLevelMonitor) {
+                console.log('Starting audio level monitoring for external webcam');
+                window.audioLevelMonitor();
+            }
+
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('Unable to access camera. Please ensure you have granted camera permissions.');
+        }
+    }
+
+    function stopPoloRecording() {
+        console.log('Stopping polo recording');
+        
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+
+        // Update UI for Marco Polo interface
+        document.getElementById('main-record-btn').classList.remove('hidden');
+        document.getElementById('stop-record-btn').classList.add('hidden');
+        document.getElementById('recording-overlay').classList.add('hidden');
+
+        stopRecordingTimer();
+    }
+
+    let recordingTimer;
+    let recordingSeconds = 0;
+
+    function startRecordingTimer() {
+        recordingSeconds = 0;
+        const timeDisplay = document.getElementById('recording-time');
+        
+        recordingTimer = setInterval(() => {
+            recordingSeconds++;
+            const minutes = Math.floor(recordingSeconds / 60);
+            const seconds = recordingSeconds % 60;
+            if (timeDisplay) {
+                timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+
+    function stopRecordingTimer() {
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+        }
+    }
+
+    function showPoloPreview(videoBlob) {
+        console.log('Showing polo preview');
+        console.log('Video blob size:', videoBlob.size, 'type:', videoBlob.type);
+        
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const recordedPoloPreview = document.getElementById('recorded-polo-preview');
+        
+        if (recordedPoloPreview) {
+            recordedPoloPreview.src = videoUrl;
+            recordedPoloPreview.muted = false; // Ensure audio is not muted
+            recordedPoloPreview.volume = 1.0; // Set volume to maximum
+            recordedPoloPreview.controls = true; // Ensure controls are visible
+            
+            console.log('Video element configured: muted =', recordedPoloPreview.muted, 'volume =', recordedPoloPreview.volume);
+            
+            // Wait for metadata to load, then ensure audio is enabled
+            recordedPoloPreview.addEventListener('loadedmetadata', function() {
+                console.log('Video metadata loaded');
+                console.log('Video duration:', this.duration);
+                console.log('Video has audio tracks:', this.webkitAudioDecodedByteCount !== undefined ? this.webkitAudioDecodedByteCount : 'unknown');
+                console.log('Video element muted:', this.muted, 'volume:', this.volume);
+                this.muted = false;
+                this.volume = 1.0;
+            });
+            
+            // Add error handling
+            recordedPoloPreview.addEventListener('error', function(e) {
+                console.error('Video playback error:', e);
+            });
+            
+            // Try to play with audio after user interaction
+            recordedPoloPreview.addEventListener('click', function() {
+                this.muted = false;
+                this.volume = 1.0;
+                console.log('Video clicked, ensuring audio is unmuted');
+            });
+            
+            // Also try when play starts
+            recordedPoloPreview.addEventListener('play', function() {
+                this.muted = false;
+                this.volume = 1.0;
+                console.log('Video started playing, audio should be enabled');
+            });
+        }
+
+        // Move to step 4 (preview step) after recording
+        showStep(4);
+    }
+
+    function retakePoloRecording() {
+        console.log('Retaking polo recording');
+        
+        const recordingArea = document.querySelector('.recording-area');
+        const poloPreview = document.getElementById('polo-preview');
+        const placeholder = document.querySelector('.camera-placeholder');
+        const cameraStreamElement = document.getElementById('camera-stream');
+
+        if (recordingArea) {
+            recordingArea.style.display = 'block';
+        }
+        
+        if (poloPreview) {
+            poloPreview.classList.add('hidden');
+        }
+
+        if (placeholder) {
+            placeholder.style.display = 'block';
+        }
+
+        if (cameraStreamElement) {
+            cameraStreamElement.classList.add('hidden');
+        }
+
+        recordedVideo = null;
+        recordedChunks = [];
+    }
+
+    function showSharingOptions() {
+        console.log('Showing sharing options');
+        
+        const poloPreview = document.getElementById('polo-preview');
+        const sharingOptions = document.getElementById('sharing-options');
+        const invitesNextBtn = document.getElementById('invites-next');
+
+        if (poloPreview) {
+            poloPreview.style.display = 'none';
+        }
+        
+        if (sharingOptions) {
+            sharingOptions.classList.remove('hidden');
+        }
+
+        if (invitesNextBtn) {
+            invitesNextBtn.classList.remove('hidden');
+        }
+    }
+
+    function handleSharingMethod(method, buttonElement) {
+        console.log('Handling sharing method:', method);
+        
+        let input;
+        let message = '';
+
+        switch (method) {
+            case 'email':
+                input = document.querySelector('.email-input');
+                if (input && input.value) {
+                    const emails = input.value.split(',').map(e => e.trim()).filter(e => e);
+                    invitesSent += emails.length;
+                    message = `Email invitations sent to ${emails.length} recipients!`;
+                } else {
+                    alert('Please enter at least one email address');
+                    return;
+                }
+                break;
+                
+            case 'text':
+                input = document.querySelector('.phone-input');
+                if (input && input.value) {
+                    const phones = input.value.split(',').map(p => p.trim()).filter(p => p);
+                    invitesSent += phones.length;
+                    message = `Text invitations sent to ${phones.length} recipients!`;
+                } else {
+                    alert('Please enter at least one phone number');
+                    return;
+                }
+                break;
+                
+            case 'link':
+                invitesSent += 1;
+                message = 'Invitation link copied to clipboard!';
+                // Actually copy to clipboard
+                const shareLink = document.querySelector('.share-link');
+                if (shareLink) {
+                    shareLink.select();
+                    document.execCommand('copy');
+                }
+                break;
+        }
+
+        // Show success message on button
+        if (buttonElement) {
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Sent!';
+            buttonElement.style.background = '#34c759';
+            
+            setTimeout(() => {
+                buttonElement.textContent = originalText;
+                buttonElement.style.background = '';
+            }, 2000);
+        }
+
+        // Show notification
+        if (message) {
+            alert(message);
+        }
+    }
+
+    // Step 4: Success Screen
+    function initializeSuccessScreen() {
+        console.log('Initializing success screen');
+
+        // Update final stats
+        const finalFeaturesCount = document.getElementById('final-features-count');
+        const finalInvitesSent = document.getElementById('final-invites-sent');
+        const finalTimeSaved = document.getElementById('final-time-saved');
+
+        if (finalFeaturesCount) {
+            finalFeaturesCount.textContent = selectedFeatures.length;
+        }
+        
+        if (finalInvitesSent) {
+            finalInvitesSent.textContent = invitesSent;
+        }
+
+        if (finalTimeSaved) {
+            const timeSaved = Math.max(2, selectedFeatures.length * 1.5);
+            finalTimeSaved.textContent = `${Math.round(timeSaved)}hrs`;
+        }
+
+        // Success screen buttons
+        const sendMoreInvitesBtn = document.querySelector('.success-actions .secondary');
+        if (sendMoreInvitesBtn) {
+            sendMoreInvitesBtn.addEventListener('click', function() {
+                showStep(3);
+            });
+        }
+    }
+
+    function resetOnboarding() {
+        console.log('Resetting onboarding');
+        
+        currentStep = 1;
+        selectedFeatures = [];
+        recordedVideo = null;
+        formData = {};
+        invitesSent = 0;
+        recordingSeconds = 0;
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+
+        if (recordingTimer) {
+            clearInterval(recordingTimer);
+        }
+
+        // Reset form
+        if (accountForm) {
+            accountForm.reset();
+        }
+
+        // Reset UI elements
+        const elementsToReset = [
+            '.recording-area',
+            '.camera-placeholder',
+            '#polo-preview',
+            '#sharing-options',
+            '#invites-next'
+        ];
+
+        elementsToReset.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.display = '';
+                element.classList.remove('hidden');
+            }
+        });
+
+        // Hide specific elements
+        const elementsToHide = [
+            '#polo-stop-btn',
+            '#recording-status',
+            '#camera-stream'
+        ];
+
+        elementsToHide.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
+    }
+
+    console.log('Onboarding script initialized');
+});
