@@ -97,6 +97,14 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.logo-icon-text {
+    font-size: 28px;
+    margin-right: 8px;
+    display: inline-block;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
 .logo-text {
     font-size: 20px;
     font-weight: 600;
