@@ -109,26 +109,63 @@ if (testimonialsTrack && testimonialCards.length > 0) {
     }, { passive: true });
 }
 
-// FAQ Functionality
-document.querySelectorAll('.faq-question').forEach(button => {
-    button.addEventListener('click', () => {
-        const faqItem = button.closest('.faq-item');
-        const isActive = faqItem.classList.contains('active');
-        
-        // Close all other FAQ items
-        document.querySelectorAll('.faq-item').forEach(item => {
-            if (item !== faqItem) {
-                item.classList.remove('active');
-            }
-        });
-        
-        // Toggle current FAQ item
-        faqItem.classList.toggle('active');
-        
-        // Accessibility
-        button.setAttribute('aria-expanded', !isActive);
+// FAQ Functionality - Simple and robust implementation
+function initializeFAQ() {
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    if (faqQuestions.length === 0) {
+        setTimeout(initializeFAQ, 100);
+        return;
+    }
+    
+    // Ensure all FAQ items are closed by default
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach((item) => {
+        item.classList.remove('active');
     });
-});
+    
+    faqQuestions.forEach((button) => {
+        // Remove any existing event listeners
+        button.removeEventListener('click', handleFAQClick);
+        
+        // Add new event listener
+        button.addEventListener('click', handleFAQClick);
+    });
+}
+
+function handleFAQClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const faqItem = this.closest('.faq-item');
+    if (!faqItem) {
+        return;
+    }
+    
+    const faqAnswer = faqItem.querySelector('.faq-answer');
+    if (!faqAnswer) {
+        return;
+    }
+    
+    // Check current state before any changes
+    const hasActiveClass = faqItem.classList.contains('active');
+    
+    // Toggle the active state using CSS classes for smooth animation
+    if (hasActiveClass) {
+        // Hide the answer by removing active class (CSS handles the animation)
+        faqItem.classList.remove('active');
+    } else {
+        // Show the answer by adding active class (CSS handles the animation)
+        faqItem.classList.add('active');
+    }
+    
+    // Accessibility
+    this.setAttribute('aria-expanded', !hasActiveClass);
+}
+
+// Initialize FAQ when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeFAQ);
 
 // Add scroll reveal animations
 function reveal() {
@@ -146,7 +183,7 @@ function reveal() {
 }
 
 // Add reveal class to elements
-document.querySelectorAll('.benefit-item, .feature-box, .testimonial-card, .faq-item').forEach(element => {
+document.querySelectorAll('.benefit-item, .feature-box, .testimonial-card').forEach(element => {
     element.classList.add('reveal');
 });
 
@@ -1284,25 +1321,6 @@ document.addEventListener('DOMContentLoaded', function() {
             mobileNav.classList.toggle('active');
         });
     }
-
-    // FAQ functionality
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        if (question) {
-            question.addEventListener('click', function() {
-                const isActive = item.classList.contains('active');
-                
-                // Close all FAQ items
-                faqItems.forEach(faq => faq.classList.remove('active'));
-                
-                // Open clicked item if it wasn't active
-                if (!isActive) {
-                    item.classList.add('active');
-                }
-            });
-        }
-    });
 
     // ===== ONBOARDING FLOW =====
     
