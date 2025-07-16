@@ -1,5 +1,196 @@
 console.log('Script loaded successfully!');
 
+// Testimonials Carousel Functionality
+function initializeTestimonialsCarousel() {
+    console.log('Initializing testimonials carousel...');
+    
+    const carouselContainer = document.querySelector('.testimonials-container');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const cards = document.querySelectorAll('.testimonial-card');
+    
+    console.log('Found elements:', {
+        carouselContainer: !!carouselContainer,
+        dotsCount: dots.length,
+        cardsCount: cards.length
+    });
+    
+    if (!carouselContainer) {
+        console.warn('Testimonials container not found');
+        return;
+    }
+    
+    if (dots.length === 0) {
+        console.warn('No carousel dots found');
+        return;
+    }
+    
+    if (cards.length === 0) {
+        console.warn('No testimonial cards found');
+        return;
+    }
+    
+    let currentSlide = 0;
+    const isMobile = window.innerWidth <= 768;
+    const cardWidth = isMobile ? (280 + 20) : (250 + 32); // card width + gap (mobile vs desktop)
+    const totalSlides = dots.length;
+    
+    // Calculate total width needed for all cards
+    const totalWidth = totalSlides * cardWidth;
+    
+    console.log('Carousel configuration:', {
+        cardWidth,
+        totalSlides,
+        totalWidth,
+        isMobile,
+        containerWidth: carouselContainer.offsetWidth,
+        windowWidth: window.innerWidth
+    });
+    
+    // Ensure container has enough width to accommodate all cards
+    carouselContainer.style.width = `${totalWidth}px`;
+    
+    // Force a reflow to ensure the width is applied
+    carouselContainer.offsetHeight;
+    
+    function goToSlide(slideIndex) {
+        console.log('Going to slide:', slideIndex);
+        currentSlide = slideIndex;
+        
+        let translateX = -slideIndex * cardWidth;
+        
+        // On mobile only, center the last card in the viewport
+        if (isMobile && slideIndex === totalSlides - 1) {
+            const viewportWidth = window.innerWidth;
+            const carouselPadding = 32; // 16px padding on each side
+            const availableWidth = viewportWidth - carouselPadding;
+            const cardCenterOffset = availableWidth / 2 - cardWidth / 2;
+            translateX = -(slideIndex * cardWidth) + cardCenterOffset;
+        }
+        // On desktop, slide by half card distance for smoother navigation
+        else if (!isMobile) {
+            const halfCardDistance = cardWidth / 2;
+            translateX = -slideIndex * halfCardDistance;
+            
+            // Ensure we don't go beyond the last card
+            const maxTranslateX = -(totalSlides * cardWidth - cardWidth);
+            translateX = Math.max(translateX, maxTranslateX);
+        }
+        
+        carouselContainer.style.transform = `translateX(${translateX}px)`;
+        
+        // Update active dot
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === slideIndex);
+        });
+        
+        console.log('Carousel moved to slide', slideIndex, 'with translateX:', translateX, 'isMobile:', isMobile);
+    }
+    
+    // Add click event listeners to dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            console.log('Dot clicked:', index);
+            goToSlide(index);
+        });
+    });
+    
+    // Initialize first slide
+    goToSlide(0);
+    console.log('Testimonials carousel initialized successfully');
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        // Recalculate card width based on new screen size
+        const newIsMobile = window.innerWidth <= 768;
+        const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
+        const newTotalWidth = totalSlides * newCardWidth;
+        
+        // Update container width
+        carouselContainer.style.width = `${newTotalWidth}px`;
+        
+        // Recalculate current slide position with new card width
+        let newTranslateX = -currentSlide * newCardWidth;
+        
+        // On mobile only, center the last card in the viewport
+        if (newIsMobile && currentSlide === totalSlides - 1) {
+            const viewportWidth = window.innerWidth;
+            const carouselPadding = 32; // 16px padding on each side
+            const availableWidth = viewportWidth - carouselPadding;
+            const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+            newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+        }
+        // On desktop, slide by half card distance for smoother navigation
+        else if (!newIsMobile) {
+            const halfCardDistance = newCardWidth / 2;
+            newTranslateX = -currentSlide * halfCardDistance;
+            
+            // Ensure we don't go beyond the last card
+            const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
+            newTranslateX = Math.max(newTranslateX, maxTranslateX);
+        }
+        
+        carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
+        
+        console.log('Carousel resized:', {
+            newIsMobile,
+            newCardWidth,
+            newTotalWidth,
+            newTranslateX,
+            windowWidth: window.innerWidth
+        });
+    });
+    
+    // Handle orientation change specifically for mobile
+    window.addEventListener('orientationchange', () => {
+        // Wait for orientation change to complete
+        setTimeout(() => {
+            const newIsMobile = window.innerWidth <= 768;
+            const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
+            const newTotalWidth = totalSlides * newCardWidth;
+            
+            carouselContainer.style.width = `${newTotalWidth}px`;
+            
+            let newTranslateX = -currentSlide * newCardWidth;
+            
+            // On mobile only, center the last card in the viewport
+            if (newIsMobile && currentSlide === totalSlides - 1) {
+                const viewportWidth = window.innerWidth;
+                const carouselPadding = 32; // 16px padding on each side
+                const availableWidth = viewportWidth - carouselPadding;
+                const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+                newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+            }
+            // On desktop, slide by half card distance for smoother navigation
+            else if (!newIsMobile) {
+                const halfCardDistance = newCardWidth / 2;
+                newTranslateX = -currentSlide * halfCardDistance;
+                
+                // Ensure we don't go beyond the last card
+                const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
+                newTranslateX = Math.max(newTranslateX, maxTranslateX);
+            }
+            
+            carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
+            
+            console.log('Orientation changed:', {
+                newIsMobile,
+                newCardWidth,
+                newTotalWidth,
+                newTranslateX,
+                windowWidth: window.innerWidth
+            });
+        }, 500);
+    });
+}
+
+// Initialize carousel when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure all styles are applied
+    setTimeout(() => {
+        initializeTestimonialsCarousel();
+    }, 100);
+});
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -56,58 +247,6 @@ document.querySelectorAll('.feature-card').forEach(card => {
 
 // Detect touch device
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-// Testimonials Auto-scroll
-const testimonialsTrack = document.querySelector('.testimonials-track');
-const testimonialCards = document.querySelectorAll('.testimonial-card');
-const indicators = document.querySelectorAll('.indicator');
-
-// Only proceed if testimonials exist
-if (testimonialsTrack && testimonialCards.length > 0) {
-    let currentIndex = 0;
-    const totalTestimonials = testimonialCards.length;
-    
-    // Clone testimonials for infinite scroll
-    testimonialCards.forEach(card => {
-        const clone = card.cloneNode(true);
-        testimonialsTrack.appendChild(clone);
-    });
-
-    // Update indicators
-    function updateIndicators() {
-        indicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === currentIndex);
-        });
-    }
-
-    // Auto-scroll animation is handled by CSS, but we need to update indicators
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % totalTestimonials;
-        updateIndicators();
-    }, 5000); // Match this with the CSS animation duration divided by number of slides
-
-    // Pause animation on hover
-    testimonialsTrack.addEventListener('mouseenter', () => {
-        testimonialsTrack.style.animationPlayState = 'paused';
-    });
-
-    testimonialsTrack.addEventListener('mouseleave', () => {
-        testimonialsTrack.style.animationPlayState = 'running';
-    });
-
-    // Handle touch events
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    testimonialsTrack.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        testimonialsTrack.style.animationPlayState = 'paused';
-    }, { passive: true });
-
-    testimonialsTrack.addEventListener('touchend', () => {
-        testimonialsTrack.style.animationPlayState = 'running';
-    }, { passive: true });
-}
 
 // FAQ Functionality - Simple and robust implementation
 function initializeFAQ() {
@@ -1586,6 +1725,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (teamName && formData.companyName) {
             teamName.textContent = formData.companyName;
         }
+
+        // Control buttons functionality
+        const controlButtons = document.querySelectorAll('.control-btn');
+        controlButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all control buttons
+                controlButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update action message based on selected mode
+                const actionMessage = document.querySelector('.message-content h4');
+                const actionDescription = document.querySelector('.message-content p');
+                
+                if (actionMessage && actionDescription) {
+                    const buttonText = this.textContent.trim();
+                    switch(buttonText) {
+                        case 'HD':
+                            actionMessage.textContent = 'HD Recording';
+                            actionDescription.textContent = 'High definition video recording';
+                            break;
+                        case 'Voice':
+                            actionMessage.textContent = 'Voice Recording';
+                            actionDescription.textContent = 'Audio-only recording';
+                            break;
+                        case 'Polo':
+                            actionMessage.textContent = 'Record a Polo';
+                            actionDescription.textContent = 'Tap the record button to begin';
+                            break;
+                        case 'Note':
+                            actionMessage.textContent = 'Add a Note';
+                            actionDescription.textContent = 'Text-based message';
+                            break;
+                        case 'Photo':
+                            actionMessage.textContent = 'Take a Photo';
+                            actionDescription.textContent = 'Capture a still image';
+                            break;
+                        default:
+                            actionMessage.textContent = 'Record a Polo';
+                            actionDescription.textContent = 'Tap the record button to begin';
+                    }
+                }
+            });
+        });
 
         // Marco Polo recording controls
         const mainRecordBtn = document.getElementById('main-record-btn');
