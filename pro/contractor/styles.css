@@ -642,7 +642,7 @@ body::before {
 .pro-feature-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    border: 1.5px solid #3b82f6;
     border-radius: 16px;
     padding: 24px;
     text-align: left;
@@ -651,7 +651,7 @@ body::before {
 
 .pro-feature-card:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(59, 130, 246, 0.4);
+    border-color: #9333ea;
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(59, 130, 246, 0.1);
 }
@@ -1032,7 +1032,7 @@ body::before {
 
 .testimonials-container {
     display: flex;
-    gap: 42px;
+    gap: 32px;
     overflow: visible; /* Allow cards to be visible outside container */
     scroll-behavior: smooth;
     margin-bottom: 32px;
@@ -1148,6 +1148,15 @@ body::before {
     background: linear-gradient(135deg, #3b82f6, #9333ea);
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
     transform: scale(1.2);
+}
+
+/* Hide dots 2, 3, and 4 on tablet and desktop (show only 2 dots) */
+@media (min-width: 769px) {
+    .carousel-dot[data-slide="2"],
+    .carousel-dot[data-slide="3"],
+    .carousel-dot[data-slide="4"] {
+        display: none;
+    }
 }
 
 /* FAQ Section */
@@ -1307,14 +1316,18 @@ body::before {
 .blog-grid {
     display: flex;
     flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
     justify-content: center;
-    gap: 24px; 
-    margin-bottom: 48px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
 }
 
 .blog-card {
-    height: 300px;
-    max-width: 250px;
+    max-width: 255px;
+    width: 100%;
+    height: auto;
+    min-height: 200px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(15px);
     border-radius: 20px;
@@ -1323,6 +1336,7 @@ body::before {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    flex: 0 0 auto;
 }
 
 .blog-card::before {
@@ -1362,7 +1376,7 @@ body::before {
     font-size: 18px;
     font-weight: 600;
     line-height: 1.4;
-    margin-bottom: 12px;
+    margin-bottom: 40px;
     color: #ffffff;
     position: relative;
     z-index: 1;
@@ -2942,6 +2956,7 @@ footer::before {
 
     .benefits-header h2 {
         font-size: 20px;
+        margin-bottom: 32px;
     }
 
     .benefits-header p {
@@ -2993,7 +3008,7 @@ footer::before {
     }
 
     .testimonials-container {
-        gap: 20px;
+        gap: 24px;
         margin-bottom: 24px;
         width: max-content; /* Allow container to expand on mobile */
         min-width: 100%; /* Ensure it's at least as wide as the carousel */
@@ -3142,4 +3157,12 @@ footer::before {
     display: flex;
     gap: 16px;
     flex-direction: column;
+}
+
+.blog-card h3 {
+    margin-bottom: 40px;
+}
+
+.blog-card a {
+    height: 250px;
 }

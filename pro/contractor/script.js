@@ -32,14 +32,14 @@ function initializeTestimonialsCarousel() {
     let currentSlide = 0;
     const isMobile = window.innerWidth <= 768;
     const cardWidth = isMobile ? (280 + 20) : (250 + 32); // card width + gap (mobile vs desktop)
-    const totalSlides = dots.length;
+    const totalCards = cards.length;
     
     // Calculate total width needed for all cards
-    const totalWidth = totalSlides * cardWidth;
+    const totalWidth = totalCards * cardWidth;
     
     console.log('Carousel configuration:', {
         cardWidth,
-        totalSlides,
+        totalCards,
         totalWidth,
         isMobile,
         containerWidth: carouselContainer.offsetWidth,
@@ -56,23 +56,28 @@ function initializeTestimonialsCarousel() {
         console.log('Going to slide:', slideIndex);
         currentSlide = slideIndex;
         
-        let translateX = -slideIndex * cardWidth;
+        let translateX;
         
-        // On mobile only, center the last card in the viewport
-        if (isMobile && slideIndex === totalSlides - 1) {
-            const viewportWidth = window.innerWidth;
-            const carouselPadding = 32; // 16px padding on each side
-            const availableWidth = viewportWidth - carouselPadding;
-            const cardCenterOffset = availableWidth / 2 - cardWidth / 2;
-            translateX = -(slideIndex * cardWidth) + cardCenterOffset;
-        }
-        // On desktop, slide by full card width for each dot click
-        else if (!isMobile) {
+        if (isMobile) {
+            // Mobile: Each dot corresponds to a specific card
             translateX = -slideIndex * cardWidth;
             
-            // Ensure we don't go beyond the last card
-            const maxTranslateX = -(totalSlides * cardWidth - cardWidth);
-            translateX = Math.max(translateX, maxTranslateX);
+            // Center the last card in the viewport on mobile
+            if (slideIndex === totalCards - 1) {
+                const viewportWidth = window.innerWidth;
+                const carouselPadding = 32; // 16px padding on each side
+                const availableWidth = viewportWidth - carouselPadding;
+                const cardCenterOffset = availableWidth / 2 - cardWidth / 2;
+                translateX = -(slideIndex * cardWidth) + cardCenterOffset;
+            }
+        } else {
+            // Desktop: Only 2 dots, each moves by 1 card width
+            // Dot 0: shows cards 0-2, Dot 1: shows cards 1-3
+            if (slideIndex === 0) {
+                translateX = 0; // Show first 3 cards
+            } else {
+                translateX = -1 * cardWidth; // Show cards 1-3 (shift by 1 card width)
+            }
         }
         
         carouselContainer.style.transform = `translateX(${translateX}px)`;
@@ -102,29 +107,32 @@ function initializeTestimonialsCarousel() {
         // Recalculate card width based on new screen size
         const newIsMobile = window.innerWidth <= 768;
         const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
-        const newTotalWidth = totalSlides * newCardWidth;
+        const newTotalWidth = totalCards * newCardWidth;
         
         // Update container width
         carouselContainer.style.width = `${newTotalWidth}px`;
         
-        // Recalculate current slide position with new card width
-        let newTranslateX = -currentSlide * newCardWidth;
+        let newTranslateX;
         
-        // On mobile only, center the last card in the viewport
-        if (newIsMobile && currentSlide === totalSlides - 1) {
-            const viewportWidth = window.innerWidth;
-            const carouselPadding = 32; // 16px padding on each side
-            const availableWidth = viewportWidth - carouselPadding;
-            const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
-            newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
-        }
-        // On desktop, slide by full card width for each dot click
-        else if (!newIsMobile) {
+        if (newIsMobile) {
+            // Mobile: Each dot corresponds to a specific card
             newTranslateX = -currentSlide * newCardWidth;
             
-            // Ensure we don't go beyond the last card
-            const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
-            newTranslateX = Math.max(newTranslateX, maxTranslateX);
+            // Center the last card in the viewport on mobile
+            if (currentSlide === totalCards - 1) {
+                const viewportWidth = window.innerWidth;
+                const carouselPadding = 32; // 16px padding on each side
+                const availableWidth = viewportWidth - carouselPadding;
+                const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+                newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+            }
+        } else {
+            // Desktop: Only 2 dots, each moves by 1 card width
+            if (currentSlide === 0) {
+                newTranslateX = 0; // Show first 3 cards
+            } else {
+                newTranslateX = -1 * newCardWidth; // Show cards 1-3 (shift by 1 card width)
+            }
         }
         
         carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
@@ -144,27 +152,31 @@ function initializeTestimonialsCarousel() {
         setTimeout(() => {
             const newIsMobile = window.innerWidth <= 768;
             const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
-            const newTotalWidth = totalSlides * newCardWidth;
+            const newTotalWidth = totalCards * newCardWidth;
             
             carouselContainer.style.width = `${newTotalWidth}px`;
             
-            let newTranslateX = -currentSlide * newCardWidth;
+            let newTranslateX;
             
-            // On mobile only, center the last card in the viewport
-            if (newIsMobile && currentSlide === totalSlides - 1) {
-                const viewportWidth = window.innerWidth;
-                const carouselPadding = 32; // 16px padding on each side
-                const availableWidth = viewportWidth - carouselPadding;
-                const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
-                newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
-            }
-            // On desktop, slide by full card width for each dot click
-            else if (!newIsMobile) {
+            if (newIsMobile) {
+                // Mobile: Each dot corresponds to a specific card
                 newTranslateX = -currentSlide * newCardWidth;
                 
-                // Ensure we don't go beyond the last card
-                const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
-                newTranslateX = Math.max(newTranslateX, maxTranslateX);
+                // Center the last card in the viewport on mobile
+                if (currentSlide === totalCards - 1) {
+                    const viewportWidth = window.innerWidth;
+                    const carouselPadding = 32; // 16px padding on each side
+                    const availableWidth = viewportWidth - carouselPadding;
+                    const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+                    newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+                }
+            } else {
+                // Desktop: Only 2 dots, each moves by 1 card width
+                if (currentSlide === 0) {
+                    newTranslateX = 0; // Show first 3 cards
+                } else {
+                    newTranslateX = -1 * newCardWidth; // Show cards 1-3 (shift by 1 card width)
+                }
             }
             
             carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
