@@ -66,10 +66,9 @@ function initializeTestimonialsCarousel() {
             const cardCenterOffset = availableWidth / 2 - cardWidth / 2;
             translateX = -(slideIndex * cardWidth) + cardCenterOffset;
         }
-        // On desktop, slide by half card distance for smoother navigation
+        // On desktop, slide by full card width for each dot click
         else if (!isMobile) {
-            const halfCardDistance = cardWidth / 2;
-            translateX = -slideIndex * halfCardDistance;
+            translateX = -slideIndex * cardWidth;
             
             // Ensure we don't go beyond the last card
             const maxTranslateX = -(totalSlides * cardWidth - cardWidth);
@@ -119,10 +118,9 @@ function initializeTestimonialsCarousel() {
             const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
             newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
         }
-        // On desktop, slide by half card distance for smoother navigation
+        // On desktop, slide by full card width for each dot click
         else if (!newIsMobile) {
-            const halfCardDistance = newCardWidth / 2;
-            newTranslateX = -currentSlide * halfCardDistance;
+            newTranslateX = -currentSlide * newCardWidth;
             
             // Ensure we don't go beyond the last card
             const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
@@ -160,10 +158,9 @@ function initializeTestimonialsCarousel() {
                 const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
                 newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
             }
-            // On desktop, slide by half card distance for smoother navigation
+            // On desktop, slide by full card width for each dot click
             else if (!newIsMobile) {
-                const halfCardDistance = newCardWidth / 2;
-                newTranslateX = -currentSlide * halfCardDistance;
+                newTranslateX = -currentSlide * newCardWidth;
                 
                 // Ensure we don't go beyond the last card
                 const maxTranslateX = -(totalSlides * newCardWidth - newCardWidth);
