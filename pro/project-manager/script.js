@@ -1,5 +1,205 @@
 console.log('Script loaded successfully!');
 
+// Testimonials Carousel Functionality
+function initializeTestimonialsCarousel() {
+    console.log('Initializing testimonials carousel...');
+    
+    const carouselContainer = document.querySelector('.testimonials-container');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const cards = document.querySelectorAll('.testimonial-card');
+    
+    console.log('Found elements:', {
+        carouselContainer: !!carouselContainer,
+        dotsCount: dots.length,
+        cardsCount: cards.length
+    });
+    
+    if (!carouselContainer) {
+        console.warn('Testimonials container not found');
+        return;
+    }
+    
+    if (dots.length === 0) {
+        console.warn('No carousel dots found');
+        return;
+    }
+    
+    if (cards.length === 0) {
+        console.warn('No testimonial cards found');
+        return;
+    }
+    
+    let currentSlide = 0;
+    const isMobile = window.innerWidth <= 768;
+    const cardWidth = isMobile ? (280 + 20) : (250 + 32); // card width + gap (mobile vs desktop)
+    const totalCards = cards.length;
+    
+    // Calculate total width needed for all cards
+    const totalWidth = totalCards * cardWidth;
+    
+    console.log('Carousel configuration:', {
+        cardWidth,
+        totalCards,
+        totalWidth,
+        isMobile,
+        containerWidth: carouselContainer.offsetWidth,
+        windowWidth: window.innerWidth
+    });
+    
+    // Ensure container has enough width to accommodate all cards
+    carouselContainer.style.width = `${totalWidth}px`;
+    
+    // Force a reflow to ensure the width is applied
+    carouselContainer.offsetHeight;
+    
+    function goToSlide(slideIndex) {
+        console.log('Going to slide:', slideIndex);
+        currentSlide = slideIndex;
+        
+        let translateX;
+        
+        if (isMobile) {
+            // Mobile: Each dot corresponds to a specific card
+            translateX = -slideIndex * cardWidth;
+            
+            // Center the last card in the viewport on mobile
+            if (slideIndex === totalCards - 1) {
+                const viewportWidth = window.innerWidth;
+                const carouselPadding = 32; // 16px padding on each side
+                const availableWidth = viewportWidth - carouselPadding;
+                const cardCenterOffset = availableWidth / 2 - cardWidth / 2;
+                translateX = -(slideIndex * cardWidth) + cardCenterOffset;
+            }
+        } else {
+            // Desktop: Only 2 dots, each moves by 1 card width
+            // Dot 0: shows cards 0-2, Dot 1: shows cards 1-3
+            if (slideIndex === 0) {
+                translateX = 0; // Show first 3 cards
+            } else {
+                translateX = -1 * cardWidth; // Show cards 1-3 (shift by 1 card width)
+            }
+        }
+        
+        carouselContainer.style.transform = `translateX(${translateX}px)`;
+        
+        // Update active dot
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === slideIndex);
+        });
+        
+        console.log('Carousel moved to slide', slideIndex, 'with translateX:', translateX, 'isMobile:', isMobile);
+    }
+    
+    // Add click event listeners to dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            console.log('Dot clicked:', index);
+            goToSlide(index);
+        });
+    });
+    
+    // Initialize first slide
+    goToSlide(0);
+    console.log('Testimonials carousel initialized successfully');
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        // Recalculate card width based on new screen size
+        const newIsMobile = window.innerWidth <= 768;
+        const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
+        const newTotalWidth = totalCards * newCardWidth;
+        
+        // Update container width
+        carouselContainer.style.width = `${newTotalWidth}px`;
+        
+        let newTranslateX;
+        
+        if (newIsMobile) {
+            // Mobile: Each dot corresponds to a specific card
+            newTranslateX = -currentSlide * newCardWidth;
+            
+            // Center the last card in the viewport on mobile
+            if (currentSlide === totalCards - 1) {
+                const viewportWidth = window.innerWidth;
+                const carouselPadding = 32; // 16px padding on each side
+                const availableWidth = viewportWidth - carouselPadding;
+                const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+                newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+            }
+        } else {
+            // Desktop: Only 2 dots, each moves by 1 card width
+            if (currentSlide === 0) {
+                newTranslateX = 0; // Show first 3 cards
+            } else {
+                newTranslateX = -1 * newCardWidth; // Show cards 1-3 (shift by 1 card width)
+            }
+        }
+        
+        carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
+        
+        console.log('Carousel resized:', {
+            newIsMobile,
+            newCardWidth,
+            newTotalWidth,
+            newTranslateX,
+            windowWidth: window.innerWidth
+        });
+    });
+    
+    // Handle orientation change specifically for mobile
+    window.addEventListener('orientationchange', () => {
+        // Wait for orientation change to complete
+        setTimeout(() => {
+            const newIsMobile = window.innerWidth <= 768;
+            const newCardWidth = newIsMobile ? (280 + 20) : (250 + 32);
+            const newTotalWidth = totalCards * newCardWidth;
+            
+            carouselContainer.style.width = `${newTotalWidth}px`;
+            
+            let newTranslateX;
+            
+            if (newIsMobile) {
+                // Mobile: Each dot corresponds to a specific card
+                newTranslateX = -currentSlide * newCardWidth;
+                
+                // Center the last card in the viewport on mobile
+                if (currentSlide === totalCards - 1) {
+                    const viewportWidth = window.innerWidth;
+                    const carouselPadding = 32; // 16px padding on each side
+                    const availableWidth = viewportWidth - carouselPadding;
+                    const cardCenterOffset = availableWidth / 2 - newCardWidth / 2;
+                    newTranslateX = -(currentSlide * newCardWidth) + cardCenterOffset;
+                }
+            } else {
+                // Desktop: Only 2 dots, each moves by 1 card width
+                if (currentSlide === 0) {
+                    newTranslateX = 0; // Show first 3 cards
+                } else {
+                    newTranslateX = -1 * newCardWidth; // Show cards 1-3 (shift by 1 card width)
+                }
+            }
+            
+            carouselContainer.style.transform = `translateX(${newTranslateX}px)`;
+            
+            console.log('Orientation changed:', {
+                newIsMobile,
+                newCardWidth,
+                newTotalWidth,
+                newTranslateX,
+                windowWidth: window.innerWidth
+            });
+        }, 500);
+    });
+}
+
+// Initialize carousel when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure all styles are applied
+    setTimeout(() => {
+        initializeTestimonialsCarousel();
+    }, 100);
+});
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -57,78 +257,63 @@ document.querySelectorAll('.feature-card').forEach(card => {
 // Detect touch device
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-// Testimonials Auto-scroll
-const testimonialsTrack = document.querySelector('.testimonials-track');
-const testimonialCards = document.querySelectorAll('.testimonial-card');
-const indicators = document.querySelectorAll('.indicator');
-
-// Only proceed if testimonials exist
-if (testimonialsTrack && testimonialCards.length > 0) {
-    let currentIndex = 0;
-    const totalTestimonials = testimonialCards.length;
+// FAQ Functionality - Simple and robust implementation
+function initializeFAQ() {
+    const faqQuestions = document.querySelectorAll('.faq-question');
     
-    // Clone testimonials for infinite scroll
-    testimonialCards.forEach(card => {
-        const clone = card.cloneNode(true);
-        testimonialsTrack.appendChild(clone);
-    });
-
-    // Update indicators
-    function updateIndicators() {
-        indicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === currentIndex);
-        });
+    if (faqQuestions.length === 0) {
+        setTimeout(initializeFAQ, 100);
+        return;
     }
-
-    // Auto-scroll animation is handled by CSS, but we need to update indicators
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % totalTestimonials;
-        updateIndicators();
-    }, 5000); // Match this with the CSS animation duration divided by number of slides
-
-    // Pause animation on hover
-    testimonialsTrack.addEventListener('mouseenter', () => {
-        testimonialsTrack.style.animationPlayState = 'paused';
+    
+    // Ensure all FAQ items are closed by default
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach((item) => {
+        item.classList.remove('active');
     });
-
-    testimonialsTrack.addEventListener('mouseleave', () => {
-        testimonialsTrack.style.animationPlayState = 'running';
+    
+    faqQuestions.forEach((button) => {
+        // Remove any existing event listeners
+        button.removeEventListener('click', handleFAQClick);
+        
+        // Add new event listener
+        button.addEventListener('click', handleFAQClick);
     });
-
-    // Handle touch events
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    testimonialsTrack.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        testimonialsTrack.style.animationPlayState = 'paused';
-    }, { passive: true });
-
-    testimonialsTrack.addEventListener('touchend', () => {
-        testimonialsTrack.style.animationPlayState = 'running';
-    }, { passive: true });
 }
 
-// FAQ Functionality
-document.querySelectorAll('.faq-question').forEach(button => {
-    button.addEventListener('click', () => {
-        const faqItem = button.closest('.faq-item');
-        const isActive = faqItem.classList.contains('active');
-        
-        // Close all other FAQ items
-        document.querySelectorAll('.faq-item').forEach(item => {
-            if (item !== faqItem) {
-                item.classList.remove('active');
-            }
-        });
-        
-        // Toggle current FAQ item
-        faqItem.classList.toggle('active');
-        
-        // Accessibility
-        button.setAttribute('aria-expanded', !isActive);
-    });
-});
+function handleFAQClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const faqItem = this.closest('.faq-item');
+    if (!faqItem) {
+        return;
+    }
+    
+    const faqAnswer = faqItem.querySelector('.faq-answer');
+    if (!faqAnswer) {
+        return;
+    }
+    
+    // Check current state before any changes
+    const hasActiveClass = faqItem.classList.contains('active');
+    
+    // Toggle the active state using CSS classes for smooth animation
+    if (hasActiveClass) {
+        // Hide the answer by removing active class (CSS handles the animation)
+        faqItem.classList.remove('active');
+    } else {
+        // Show the answer by adding active class (CSS handles the animation)
+        faqItem.classList.add('active');
+    }
+    
+    // Accessibility
+    this.setAttribute('aria-expanded', !hasActiveClass);
+}
+
+// Initialize FAQ when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeFAQ);
 
 // Add scroll reveal animations
 function reveal() {
@@ -146,7 +331,7 @@ function reveal() {
 }
 
 // Add reveal class to elements
-document.querySelectorAll('.benefit-item, .feature-box, .testimonial-card, .faq-item').forEach(element => {
+document.querySelectorAll('.benefit-item, .feature-box, .testimonial-card').forEach(element => {
     element.classList.add('reveal');
 });
 
@@ -1285,25 +1470,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // FAQ functionality
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        if (question) {
-            question.addEventListener('click', function() {
-                const isActive = item.classList.contains('active');
-                
-                // Close all FAQ items
-                faqItems.forEach(faq => faq.classList.remove('active'));
-                
-                // Open clicked item if it wasn't active
-                if (!isActive) {
-                    item.classList.add('active');
-                }
-            });
-        }
-    });
-
     // ===== ONBOARDING FLOW =====
     
     // Onboarding variables
@@ -1568,6 +1734,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (teamName && formData.companyName) {
             teamName.textContent = formData.companyName;
         }
+
+        // Control buttons functionality
+        const controlButtons = document.querySelectorAll('.control-btn');
+        controlButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all control buttons
+                controlButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update action message based on selected mode
+                const actionMessage = document.querySelector('.message-content h4');
+                const actionDescription = document.querySelector('.message-content p');
+                
+                if (actionMessage && actionDescription) {
+                    const buttonText = this.textContent.trim();
+                    switch(buttonText) {
+                        case 'HD':
+                            actionMessage.textContent = 'HD Recording';
+                            actionDescription.textContent = 'High definition video recording';
+                            break;
+                        case 'Voice':
+                            actionMessage.textContent = 'Voice Recording';
+                            actionDescription.textContent = 'Audio-only recording';
+                            break;
+                        case 'Polo':
+                            actionMessage.textContent = 'Record a Polo';
+                            actionDescription.textContent = 'Tap the record button to begin';
+                            break;
+                        case 'Note':
+                            actionMessage.textContent = 'Add a Note';
+                            actionDescription.textContent = 'Text-based message';
+                            break;
+                        case 'Photo':
+                            actionMessage.textContent = 'Take a Photo';
+                            actionDescription.textContent = 'Capture a still image';
+                            break;
+                        default:
+                            actionMessage.textContent = 'Record a Polo';
+                            actionDescription.textContent = 'Tap the record button to begin';
+                    }
+                }
+            });
+        });
 
         // Marco Polo recording controls
         const mainRecordBtn = document.getElementById('main-record-btn');

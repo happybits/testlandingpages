@@ -26,6 +26,10 @@ cp "$SOURCE_FOLDER/index.html" "$TARGET_FOLDER/"
 cp "$SOURCE_FOLDER/styles.css" "$TARGET_FOLDER/"
 cp "$SOURCE_FOLDER/script.js" "$TARGET_FOLDER/"
 
+# Update image paths in the copied index.html file
+echo "Updating image paths in $TARGET_FOLDER/index.html..."
+sed -i '' 's/src="Images\//src="..\/Images\//g' "$TARGET_FOLDER/index.html"
+
 echo "✅ Template synced to $TARGET_FOLDER successfully!"
 echo "📝 Remember to customize the content for the $1 role."
 echo "🖼️  Images are shared from the pro/Images/ folder."
